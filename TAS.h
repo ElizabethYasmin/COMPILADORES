@@ -1,0 +1,175 @@
+
+#include <iostream>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <string>
+#include <fstream>
+using namespace std;
+class TAS
+{
+public:
+    vector<string> filas;     // NonTerminals
+    vector<string> columnas;  // Terminals + $
+    vector<vector<Production>> content;
+    vector<vector<string>> siguientes;
+    vector<vector<string>> primeros;
+
+    void setFilas(vector<Nodo> noTerminales);
+    void setColumnas(vector<Nodo> terminales);
+    void setPrimeros(vector<string> firsts);
+    void setSiguientes(vector<string> nexts);
+
+    Production getValue(string f, string c);
+    void setValue(Production prod, string f, string c);
+    void setValue(Production prod, int f, int c);
+    void setUpContent();
+
+    void readFromText(string fileName, int n, int m);
+
+    void print();
+
+    TAS() = default;
+    ~TAS();
+};
+
+
+
+void TAS::setFilas(vector<Nodo> noTerminales)
+{
+    for (int k = 0; k < noTerminales.size(); k++)
+    {
+        this->filas.push_back(noTerminales[k].getValue());
+    }
+}
+void TAS::setColumnas(vector<Nodo> terminales)
+{
+    for (int k = 0; k < terminales.size(); k++)
+    {
+        if (terminales[k].getValue() != "")
+            this->columnas.push_back(terminales[k].getValue());
+    }
+    this->columnas.push_back("$");
+}
+
+
+Production TAS::getValue(string f, string c)
+{
+    vector<Nodo> tempVector;
+    Nodo tempNodo{"", NullType };
+    tempVector.push_back(tempNodo);
+    Production prod{tempNodo, tempVector};
+
+    for (int k = 0; k < filas.size(); k++)
+    {
+        if (filas[k] == f)
+        {
+            for (int p = 0; p < columnas.size(); p++)
+            {
+                if (columnas[p] == c)
+                    return content[k][p];
+            }
+        }
+    }
+    return prod;
+}
+
+void TAS::setValue(Production prod, string f, string c)
+{
+    for (int k = 0; k < filas.size(); k++)
+    {
+        if (filas[k] == f)
+        {
+            for (int p = 0; p < columnas.size(); p++)
+            {
+                if (columnas[p] == c)
+                    content[k][p] = prod;
+            }
+        }
+    }
+}
+
+void TAS::setValue(Production prod, int f, int c)
+{
+    content[f][c] = prod;
+}
+
+
+
+void TAS::setUpContent()
+{
+    vector<Production> tempVector;
+    Nodo tempNodo{"NULL", NullType};
+    vector<Nodo> tempRS;
+    tempRS.push_back(tempNodo);
+    Production tempProd{tempNodo, tempRS};
+
+    for (int k = 0; k < this->columnas.size(); k++)
+    {
+        tempVector.push_back(tempProd);
+    }
+    for (int k = 0; k < this->filas.size(); k++)
+    {
+        content.push_back(tempVector);
+    }
+}
+
+void TAS::print()
+{
+    cout<< "Columnas:\n";
+    extra::print<string> (this->columnas);
+    cout<< "Filas:\n";
+    extra::print<string> (this->filas);
+    cout<< "Primeros:\n";
+    for (int k = 0; k < this->primeros.size(); k++)
+    {
+        cout<< this->filas[k]<<":\n";
+        extra::print<string> (this->primeros[k]);
+    }
+    cout<< "Siguiente:\n";
+    for (int k = 0; k < this->primeros.size(); k++)
+    {
+        cout<< this->filas[k]<<":\n";
+        extra::print<string> (this->siguientes[k]);
+    }
+
+    for (int k = 0; k < content.size(); k++)
+    {
+        for (int p = 0; p < content[0].size(); p++)
+        {
+            cout<< content[k][p].toString();
+        }
+        cout<<"\n";
+    }
+
+}
+
+
+void TAS::readFromText(string fileName, int n, int m)
+{
+    ifstream file(fileName);
+    string tempText;
+
+    Production prod;
+    int f = 0, c = 0; 
+    while (getline(file, tempText))
+    {
+        if ( tempText != "[]" )
+        {
+            vector<Production> tempList = prod.readProduction(tempText);
+            if (tempList.size() == 1)
+                setValue(tempList[0], f, c);
+        }
+        c++;
+        if (c >= n)
+        {
+            c = 0;
+            f++;
+        }
+    }
+}
+
+
+TAS::~TAS()
+{
+}
