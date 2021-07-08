@@ -5,7 +5,63 @@
 #include <string>
 #include <fstream>
 using namespace std;
+using namespace std;
 
+namespace funcion
+{
+
+template<class Tipo>
+bool contenido(Tipo t, vector<Tipo> container)
+{
+    for (int k = 0; k < container.size(); k++)
+    {
+        if (container[k] == t)
+            return true;
+    }
+    return false;
+}
+
+template <class Tipo>
+void printVector(vector<Tipo> container)
+{
+    for (int k = 0; k < container.size(); k++)
+    {
+        cout<< container[k]<< " ";
+    }
+    cout<< "\n";
+}
+
+
+template <class Tipo> // Copia los elementos de Origen que no estan en Destino
+void join (vector<Tipo> &destino, vector<Tipo> origen )
+{
+    bool existe;
+    if ( destino.size() == 0)
+        destino = origen;
+    
+    for (int k = 0; k < origen.size(); k++)
+    {
+        existe = false;
+        for (int p = 0; p < destino.size(); p++)
+        {
+            if (origen[k] == destino[p])
+                existe = true;
+        }
+        if (!existe)
+            destino.push_back(origen[k]);
+    }
+}
+
+
+template <class Tipo>
+void deleteFrom(Tipo elemento, vector<Tipo> &container){
+    for (int k = 0; k < container.size(); k++)
+    {
+        if (container[k] == elemento)
+            container.erase(container.begin()+k);
+    }
+}
+}
 class Grammar
 {
 private:
@@ -70,7 +126,7 @@ void Grammar::setElements(string init)
 {
     for (int k = 0; k < producciones.size(); k++)
     {
-        if(!extra::contains<Nodo>(producciones[k].getLeftSide(), No_Terminales))
+        if(!funcion::contenido<Nodo>(producciones[k].getLeftSide(), No_Terminales))
             No_Terminales.push_back(producciones[k].getLeftSide());
         
         if (producciones[k].getLeftSide().getValue() == init)
@@ -79,7 +135,7 @@ void Grammar::setElements(string init)
         auto temp = producciones[k].getRightSide();
         for (int p = 0; p < temp.size(); p++)
         {
-            if ((temp[p].getType() == Terminal) && !extra::contains<Nodo>(temp[p], Terminales))
+            if ((temp[p].getType() == Terminal) && !funcion::contenido<Nodo>(temp[p], Terminales))
                 Terminales.push_back(temp[p]);
         }
     }
@@ -126,37 +182,37 @@ vector<Production> Grammar::getProductions(string nt)
 
 void Grammar::getPrimerosHelper(string name, vector<string> &firsts, vector<string> &visited)
 {
-    if ( extra::contains(name, visited))
+    if ( funcion::contenido(name, visited))
         return;
     string temp = "";
-    if ( extra::contains<Nodo>(Nodo{name, Terminal}, Terminales) && !extra::contains<string>(name, firsts))
+    if ( funcion::contenido<Nodo>(Nodo{name, Terminal}, Terminales) && !funcion::contenido<string>(name, firsts))
     {
         temp += "\"";
         temp += name;
         temp += "\"";
         firsts.push_back(temp);
     }
-    else  // X is not  Terminal
+    else  //No terminal
     {
-        vector<string> subResultado; // primeros de cada Y_i
+        vector<string> subResultado; // primeros
         string epsilon = "";
         for (int k = 0; k < producciones.size(); k++)
         {
-            if (producciones[k].getLeftSide().getValue() == name) // determinada produccion
+            if (producciones[k].getLeftSide().getValue() == name) // Produccion
             {
                 visited.push_back(producciones[k].getLeftSide().getValue());
                 int index = 0;
                 int longitud = producciones[k].getRightSide().size();
                 do
                 {
-                    subResultado = getPrimeros2(producciones[k].getRightSide()[index++].getValue(), visited); // Y_0
+                    subResultado = getPrimeros2(producciones[k].getRightSide()[index++].getValue(), visited);
                     for (int t = 0; t < subResultado.size(); t++)
                     {
-                        if (!extra::contains<string>(subResultado[t], firsts))
+                        if (!funcion::contenido<string>(subResultado[t], firsts))
                             firsts.push_back(subResultado[t]);
                     }
                 } 
-                while (extra::contains<string>(epsilon, subResultado) && index < longitud);
+                while (funcion::contenido<string>(epsilon, subResultado) && index < longitud);
             }
         }        
     }
@@ -181,7 +237,7 @@ vector<string> Grammar::getPrimeros(string name)
 
 void Grammar::getSiguientesHelper(string name, vector<string> &visited, vector<string> &nextList)
 {
-    if (extra::contains<string>(name, visited))
+    if (funcion::contenido<string>(name, visited))
         return;
     else
         visited.push_back(name);
@@ -195,26 +251,26 @@ void Grammar::getSiguientesHelper(string name, vector<string> &visited, vector<s
     if (name == this->initial)
         nextList.push_back("$");
     
-    for (int k = 0; k < producciones.size(); k++)    // Iterar por cada produccion
+    for (int k = 0; k < producciones.size(); k++)    // Recorrer por cada produccion
     {
         index = 0;
-        prod_RS = producciones[k].getRightSide(); // prod.RS
+        prod_RS = producciones[k].getRightSide(); 
         while (index < prod_RS.size() && prod_RS[index].getValue()!= name)
-            index++;    // ubicacion del elemento del cual se obtiene sus SIGUIENTES
+            index++;    // ubicacion de siguientes
 
         if (index < prod_RS.size())
         {
             if (index == prod_RS.size() -1)
-                extra::join<string>(nextList, getSiguientes2(producciones[k].getLeftSide().getValue(), visited));
+                funcion::join<string>(nextList, getSiguientes2(producciones[k].getLeftSide().getValue(), visited));
             else
             {
                 index++;
                 do
                 {
                     temp = getPrimeros(prod_RS[index].getValue());
-                    extra::join<string>(nextList, temp);
+                    funcion::join<string>(nextList, temp);
                     
-                    if (extra::contains<string>(epsilon, temp))
+                    if (funcion::contenido<string>(epsilon, temp))
                         needRule3 = true;
                     else
                         needRule3 = false;
@@ -223,7 +279,7 @@ void Grammar::getSiguientesHelper(string name, vector<string> &visited, vector<s
                 while ( index < prod_RS.size() && needRule3);
             }
             if (needRule3)
-                extra::join<string>(nextList, getSiguientes2(producciones[k].getLeftSide().getValue(), visited));
+                funcion::join<string>(nextList, getSiguientes2(producciones[k].getLeftSide().getValue(), visited));
         }
     }
 }
@@ -235,13 +291,13 @@ vector<string> Grammar::getSiguientes(string name)
     vector<string> nextList; 
 
     getSiguientesHelper(name, visitedNodes, nextList);
-    extra::deleteFrom<string>("\"\"", nextList);
+    funcion::deleteFrom<string>("\"\"", nextList);
     return nextList;
 }
 
 vector<string> Grammar::getSiguientes2(string name, vector<string> &visited)
 {
-    vector<string> nextList; // listas de siguientes
+    vector<string> nextList; 
     getSiguientesHelper(name, visited, nextList);
 
     return nextList;
@@ -254,7 +310,7 @@ void Grammar::printPrimeros()
     {
         cout<< "Nodo:"<<No_Terminales[k].getValue()<<"\n Primeros:\t";
         temp = getPrimeros(this->No_Terminales[k].getValue());
-        extra::printVector<string>(temp);
+        funcion::printVector<string>(temp);
         cout<< "\n";
     }
     cout<< "\n";
@@ -267,7 +323,7 @@ void Grammar::printSiguientes()
     {
         cout<< "Nodo:"<<No_Terminales[k].getValue()<<"\n Siguientes:\t";
         temp = getSiguientes(this->No_Terminales[k].getValue());
-        extra::printVector<string>(temp);
+        funcion::printVector<string>(temp);
         cout<< "\n";
     }
     cout<< "\n";
