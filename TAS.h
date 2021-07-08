@@ -6,17 +6,30 @@
 #include <string>
 #include <fstream>
 using namespace std;
+
+namespace funtion{
+template <class Tipo>
+void print(vector<Tipo> container)
+{
+    for (int k = 0; k < container.size(); k++)
+    {
+        cout<< container[k];
+    }
+    cout<< "\n";
+}}
+
+
 class TAS
 {
 public:
-    vector<string> filas;     // NonTerminals
-    vector<string> columnas;  // Terminals + $
+    vector<string> NoTerminales;   
+    vector<string> Terminales;  
     vector<vector<Production>> content;
     vector<vector<string>> siguientes;
     vector<vector<string>> primeros;
 
-    void setFilas(vector<Nodo> noTerminales);
-    void setColumnas(vector<Nodo> terminales);
+    void setNoTerminales(vector<Nodo> noTerminales);
+    void setTerminales(vector<Nodo> terminales);
     void setPrimeros(vector<string> firsts);
     void setSiguientes(vector<string> nexts);
 
@@ -35,21 +48,21 @@ public:
 
 
 
-void TAS::setFilas(vector<Nodo> noTerminales)
+void TAS::setNoTerminales(vector<Nodo> noTerminales)
 {
     for (int k = 0; k < noTerminales.size(); k++)
     {
-        this->filas.push_back(noTerminales[k].getValue());
+        this->NoTerminales.push_back(noTerminales[k].getValue());
     }
 }
-void TAS::setColumnas(vector<Nodo> terminales)
+void TAS::setTerminales(vector<Nodo> terminales)
 {
     for (int k = 0; k < terminales.size(); k++)
     {
         if (terminales[k].getValue() != "")
-            this->columnas.push_back(terminales[k].getValue());
+            this->Terminales.push_back(terminales[k].getValue());
     }
-    this->columnas.push_back("$");
+    this->Terminales.push_back("$");
 }
 
 
@@ -60,13 +73,13 @@ Production TAS::getValue(string f, string c)
     tempVector.push_back(tempNodo);
     Production prod{tempNodo, tempVector};
 
-    for (int k = 0; k < filas.size(); k++)
+    for (int k = 0; k < NoTerminales.size(); k++)
     {
-        if (filas[k] == f)
+        if (NoTerminales[k] == f)
         {
-            for (int p = 0; p < columnas.size(); p++)
+            for (int p = 0; p < Terminales.size(); p++)
             {
-                if (columnas[p] == c)
+                if (Terminales[p] == c)
                     return content[k][p];
             }
         }
@@ -76,13 +89,13 @@ Production TAS::getValue(string f, string c)
 
 void TAS::setValue(Production prod, string f, string c)
 {
-    for (int k = 0; k < filas.size(); k++)
+    for (int k = 0; k < NoTerminales.size(); k++)
     {
-        if (filas[k] == f)
+        if (NoTerminales[k] == f)
         {
-            for (int p = 0; p < columnas.size(); p++)
+            for (int p = 0; p < Terminales.size(); p++)
             {
-                if (columnas[p] == c)
+                if (Terminales[p] == c)
                     content[k][p] = prod;
             }
         }
@@ -99,16 +112,18 @@ void TAS::setValue(Production prod, int f, int c)
 void TAS::setUpContent()
 {
     vector<Production> tempVector;
-    Nodo tempNodo{"NULL", NullType};
+    Nodo tempNodo{"vacio", NullType};
     vector<Nodo> tempRS;
     tempRS.push_back(tempNodo);
     Production tempProd{tempNodo, tempRS};
-
-    for (int k = 0; k < this->columnas.size(); k++)
+   
+    
+    for (int k = 0; k < this->Terminales.size(); k++)
     {
+        
         tempVector.push_back(tempProd);
     }
-    for (int k = 0; k < this->filas.size(); k++)
+    for (int k = 0; k < this->NoTerminales.size(); k++)
     {
         content.push_back(tempVector);
     }
@@ -116,33 +131,34 @@ void TAS::setUpContent()
 
 void TAS::print()
 {
-    cout<< "Columnas:\n";
-    extra::print<string> (this->columnas);
-    cout<< "Filas:\n";
-    extra::print<string> (this->filas);
-    cout<< "Primeros:\n";
+   
+    cout<< "Primeros-> \n";
     for (int k = 0; k < this->primeros.size(); k++)
     {
-        cout<< this->filas[k]<<":\n";
-        extra::print<string> (this->primeros[k]);
+        cout<< this->NoTerminales[k]<<" -> ";
+        funtion::print<string> (this->primeros[k]);
     }
-    cout<< "Siguiente:\n";
+    cout<< "Siguiente-> \n";
     for (int k = 0; k < this->primeros.size(); k++)
     {
-        cout<< this->filas[k]<<":\n";
-        extra::print<string> (this->siguientes[k]);
+        cout<< this->NoTerminales[k]<<" -> ";
+        funtion::print<string> (this->siguientes[k]);
     }
 
+    cout<<"------------------------------------TAS----------------------------------------"<<endl;
     for (int k = 0; k < content.size(); k++)
     {
         for (int p = 0; p < content[0].size(); p++)
         {
+            
             cout<< content[k][p].toString();
         }
-        cout<<"\n";
+        cout<<endl;
     }
+    cout<<"------------------------------------------------------------------"<<endl;
 
 }
+
 
 
 void TAS::readFromText(string fileName, int n, int m)

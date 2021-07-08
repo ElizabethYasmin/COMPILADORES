@@ -14,7 +14,7 @@ public:
     void setTAS();
     void setGrammar(string fileName);
     queue<string> getQueueFromString(string cadena);
-    bool analyze(string cadena);
+    bool analizar(string cadena);
     LL1() = default;
     LL1(Grammar g );
 };
@@ -27,13 +27,13 @@ LL1::LL1(Grammar g)
 
 void LL1::setTAS()
 {
-    tas.setFilas(grammar.getNonTerminals());
-    tas.setColumnas(grammar.getTerminals());
+    tas.setNoTerminales(grammar.getNonTerminals());
+    tas.setTerminales(grammar.getTerminals());
     
-    for ( int k = 0; k < this->tas.filas.size(); k++)
+    for ( int k = 0; k < this->tas.NoTerminales.size(); k++)
     {
-        this->tas.primeros.push_back(grammar.getPrimeros(this->tas.filas[k]));
-        this->tas.siguientes.push_back(grammar.getSiguientes(this->tas.filas[k]));
+        this->tas.primeros.push_back(grammar.getPrimeros(this->tas.NoTerminales[k]));
+        this->tas.siguientes.push_back(grammar.getSiguientes(this->tas.NoTerminales[k]));
     }
     tas.setUpContent();
 }
@@ -93,7 +93,6 @@ bool LL1::analizar(string cadena)
             Production prod = this->tas.getValue(temp, entrada.front());
             if (prod.getLeftSide().getType() == NullType)
             {
-                cout<< "esta cadena\""<< entrada.front() <<"\" xxxx\n";
                 return false;
             }
             
@@ -109,3 +108,4 @@ bool LL1::analizar(string cadena)
 
     return (entrada.empty() && pila.empty());
 }
+

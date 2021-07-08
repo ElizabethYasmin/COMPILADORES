@@ -71,8 +71,7 @@ void Production::readLeftSide(string &production, int &index)
         leftSide = Nodo.readNodo(production, 0, index)[0];
     }
     else
-        cout << "Produccion incorrecta\n";  
-        
+ 
     index += 3; 
 }
 
